@@ -30,6 +30,8 @@ export async function run(): Promise<void> {
       .split(',')
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
+    const commit = core.getInput('commit') === 'true'
+    const commitMessage = core.getInput('commit-message') || 'docs: update projects list'
 
     const octokit = github.getOctokit(token)
 
@@ -147,6 +149,48 @@ export async function run(): Promise<void> {
     core.info(
       `Successfully updated ${readmePath} with ${filteredRepos.length} projects`
     )
+
+    // Commit and push if enabled
+    if (commit) {
+      core.info('Committing changes...')
+
+      const githubActor = process.env.GITHUB_ACTOR
+      const githubRepo = process.env.GITHUB_REPOSITORY
+      const githubSha = process.env.GITHUB_SHA
+
+      if (!githubActor || !githubRepo || !githubSha) {
+        core.warning('Missing environment variables for commit, skipping...')
+      } else {
+        const [repoOwner, repoName] = githubRepo.split('/')
+
+        // Get the file SHA for update
+        let fileSha = ''
+        try {
+          const fileResponse = await octokit.rest.repos.getContent({
+            owner: repoOwner,
+            repo: repoName,
+            path: readmePath
+          })
+          if (!Array.isArray(fileResponse.data) && fileResponse.data.type === 'file') {
+            fileSha = fileResponse.data.sha
+          }
+        } catch {
+          // File might be new, continue without SHA
+        }
+
+        // Create commit
+        const commitResponse = await octokit.rest.repos.createOrUpdateFileContents({
+          owner: repoOwner,
+          repo: repoName,
+          path: readmePath,
+          message: commitMessage,
+          content: Buffer.from(readmeContent).toString('base64'),
+          sha: fileSha || undefined
+        })
+
+        core.info(`Committed as: ${commitResponse.data.commit.sha}`)
+      }
+    }
 
     // Set output
     core.setOutput('projects-count', filteredRepos.length.toString())

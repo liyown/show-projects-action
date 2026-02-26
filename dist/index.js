@@ -28006,6 +28006,14 @@ function error(message, properties = {}) {
     issueCommand('error', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
+ * Adds a warning issue
+ * @param message warning issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
+ */
+function warning(message, properties = {}) {
+    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+}
+/**
  * Writes info to log with console.log.
  * @param message info message
  */
@@ -60621,7 +60629,7 @@ function mapToRepository(repo) {
         name: String(repo.name),
         description: repo.description,
         html_url: String(repo.html_url),
-        created_at: String(repo.created_at || ''),
+        created_at: String(repo.created_at || '')
     };
 }
 async function run() {
@@ -60635,6 +60643,8 @@ async function run() {
             .split(',')
             .map((s) => s.trim())
             .filter((s) => s.length > 0);
+        const commit = getInput('commit') === 'true';
+        const commitMessage = getInput('commit-message') || 'docs: update projects list';
         const octokit = getOctokit(token);
         // Determine if owner is an organization or user
         let isOrg = false;
@@ -60658,14 +60668,14 @@ async function run() {
                     per_page: perPage,
                     page,
                     sort: 'created',
-                    direction: 'asc',
+                    direction: 'asc'
                 })
                 : await octokit.rest.repos.listForUser({
                     username: owner,
                     per_page: perPage,
                     page,
                     sort: 'created',
-                    direction: 'asc',
+                    direction: 'asc'
                 });
             if (response.data.length === 0) {
                 break;
@@ -60684,9 +60694,7 @@ async function run() {
         // Generate projects list in markdown format
         const projectsMarkdown = filteredRepos
             .map((repo) => {
-            const description = repo.description
-                ? ` - ${repo.description}`
-                : '';
+            const description = repo.description ? ` - ${repo.description}` : '';
             return `- [${repo.name}](${repo.html_url})${description}`;
         })
             .join('\n');
@@ -60719,6 +60727,44 @@ async function run() {
         // Write updated README
         fs.writeFileSync(fullReadmePath, readmeContent);
         info(`Successfully updated ${readmePath} with ${filteredRepos.length} projects`);
+        // Commit and push if enabled
+        if (commit) {
+            info('Committing changes...');
+            const githubActor = process.env.GITHUB_ACTOR;
+            const githubRepo = process.env.GITHUB_REPOSITORY;
+            const githubSha = process.env.GITHUB_SHA;
+            if (!githubActor || !githubRepo || !githubSha) {
+                warning('Missing environment variables for commit, skipping...');
+            }
+            else {
+                const [repoOwner, repoName] = githubRepo.split('/');
+                // Get the file SHA for update
+                let fileSha = '';
+                try {
+                    const fileResponse = await octokit.rest.repos.getContent({
+                        owner: repoOwner,
+                        repo: repoName,
+                        path: readmePath
+                    });
+                    if (!Array.isArray(fileResponse.data) && fileResponse.data.type === 'file') {
+                        fileSha = fileResponse.data.sha;
+                    }
+                }
+                catch {
+                    // File might be new, continue without SHA
+                }
+                // Create commit
+                const commitResponse = await octokit.rest.repos.createOrUpdateFileContents({
+                    owner: repoOwner,
+                    repo: repoName,
+                    path: readmePath,
+                    message: commitMessage,
+                    content: Buffer.from(readmeContent).toString('base64'),
+                    sha: fileSha || undefined
+                });
+                info(`Committed as: ${commitResponse.data.commit.sha}`);
+            }
+        }
         // Set output
         setOutput('projects-count', filteredRepos.length.toString());
     }
