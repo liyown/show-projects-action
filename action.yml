@@ -12,7 +12,7 @@ branding:
 inputs:
   token:
     description:
-      GitHub token for API access (usually ${{ secrets.GITHUB_TOKEN }})
+      GitHub token for API access
     required: true
   owner:
     description: GitHub organization or username
