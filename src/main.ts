@@ -122,9 +122,9 @@ export async function run(): Promise<void> {
     }
 
     // Replace marker with projects list
-    // Keep content before and after marker, replace content between markers
+    // Check for paired markers first
     const markerRegex = new RegExp(
-      `${escapeRegExp(marker)}[\\s\\S]*?${escapeRegExp(marker)}`,
+      `(${escapeRegExp(marker)})[\\s\\S]*?(${escapeRegExp(marker)})`,
       'g'
     )
 
@@ -132,16 +132,17 @@ export async function run(): Promise<void> {
       // Marker found in pairs, replace content between them
       readmeContent = readmeContent.replace(
         markerRegex,
-        `${marker}\n${projectsMarkdown}\n${marker}`
+        `$1\n${projectsMarkdown}\n$2`
       )
     } else {
-      // Single marker, replace everything after it
+      // Single marker: insert after marker, keep existing content
       const markerIndex = readmeContent.indexOf(marker)
-      const beforeMarker = readmeContent.substring(
-        0,
-        markerIndex + marker.length
-      )
-      readmeContent = `${beforeMarker}\n${projectsMarkdown}`
+      const afterMarker = readmeContent.substring(markerIndex + marker.length)
+      readmeContent =
+        readmeContent.substring(0, markerIndex + marker.length) +
+        '\n' +
+        projectsMarkdown +
+        afterMarker
     }
 
     // Write updated README
