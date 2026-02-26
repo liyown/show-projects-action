@@ -1,5 +1,6 @@
 name: Show Projects
-description: Display organization/user repositories in README sorted by creation time
+description:
+  Display organization/user repositories in README sorted by creation time
 author: Your name or organization here
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
@@ -10,7 +11,8 @@ branding:
 # Define your inputs here.
 inputs:
   token:
-    description: GitHub token for API access (usually ${{ secrets.GITHUB_TOKEN }})
+    description:
+      GitHub token for API access (usually ${{ secrets.GITHUB_TOKEN }})
     required: true
   owner:
     description: GitHub organization or username
@@ -20,7 +22,8 @@ inputs:
     required: false
     default: 'README.md'
   marker:
-    description: Marker comment to identify where to insert projects (e.g. <!--PROJECTS-->)
+    description:
+      Marker comment to identify where to insert projects (e.g. <!--PROJECTS-->)
     required: false
     default: '<!--PROJECTS-->'
   exclude:

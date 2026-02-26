@@ -10,14 +10,12 @@ interface Repository {
   created_at: string
 }
 
-function mapToRepository(
-  repo: Record<string, unknown>
-): Repository {
+function mapToRepository(repo: Record<string, unknown>): Repository {
   return {
     name: String(repo.name),
     description: repo.description as string | null,
     html_url: String(repo.html_url),
-    created_at: String(repo.created_at || ''),
+    created_at: String(repo.created_at || '')
   }
 }
 
@@ -45,7 +43,9 @@ export async function run(): Promise<void> {
       isOrg = false
     }
 
-    core.info(`Fetching repositories for ${isOrg ? 'organization' : 'user'}: ${owner}`)
+    core.info(
+      `Fetching repositories for ${isOrg ? 'organization' : 'user'}: ${owner}`
+    )
 
     // Fetch all repositories for the owner
     const repos: Repository[] = []
@@ -59,14 +59,14 @@ export async function run(): Promise<void> {
             per_page: perPage,
             page,
             sort: 'created',
-            direction: 'asc',
+            direction: 'asc'
           })
         : await octokit.rest.repos.listForUser({
             username: owner,
             per_page: perPage,
             page,
             sort: 'created',
-            direction: 'asc',
+            direction: 'asc'
           })
 
       if (response.data.length === 0) {
@@ -94,9 +94,7 @@ export async function run(): Promise<void> {
     // Generate projects list in markdown format
     const projectsMarkdown = filteredRepos
       .map((repo) => {
-        const description = repo.description
-          ? ` - ${repo.description}`
-          : ''
+        const description = repo.description ? ` - ${repo.description}` : ''
         return `- [${repo.name}](${repo.html_url})${description}`
       })
       .join('\n')
@@ -136,14 +134,19 @@ export async function run(): Promise<void> {
     } else {
       // Single marker, replace everything after it
       const markerIndex = readmeContent.indexOf(marker)
-      const beforeMarker = readmeContent.substring(0, markerIndex + marker.length)
+      const beforeMarker = readmeContent.substring(
+        0,
+        markerIndex + marker.length
+      )
       readmeContent = `${beforeMarker}\n${projectsMarkdown}`
     }
 
     // Write updated README
     fs.writeFileSync(fullReadmePath, readmeContent)
 
-    core.info(`Successfully updated ${readmePath} with ${filteredRepos.length} projects`)
+    core.info(
+      `Successfully updated ${readmePath} with ${filteredRepos.length} projects`
+    )
 
     // Set output
     core.setOutput('projects-count', filteredRepos.length.toString())
