@@ -62,14 +62,14 @@ export async function run(): Promise<void> {
             per_page: perPage,
             page,
             sort: 'created',
-            direction: 'asc'
+            direction: 'desc'
           })
         : await octokit.rest.repos.listForUser({
             username: owner,
             per_page: perPage,
             page,
             sort: 'created',
-            direction: 'asc'
+            direction: 'desc'
           })
 
       if (response.data.length === 0) {
@@ -84,13 +84,10 @@ export async function run(): Promise<void> {
       }
     }
 
-    // Filter out excluded repositories and sort by creation time (already sorted from API)
-    const filteredRepos = repos
-      .filter((repo) => !excludeList.includes(repo.name))
-      .sort(
-        (a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      )
+    // Filter out excluded repositories (already sorted from API)
+    const filteredRepos = repos.filter(
+      (repo) => !excludeList.includes(repo.name)
+    )
 
     core.info(`Found ${filteredRepos.length} repositories`)
 
