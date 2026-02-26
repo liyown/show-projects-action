@@ -1,23 +1,37 @@
-name: The name of your action here
-description: Provide a description here
+name: Show Projects
+description: Display organization/user repositories in README sorted by creation time
 author: Your name or organization here
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: list
+  color: blue
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  token:
+    description: GitHub token for API access (usually ${{ secrets.GITHUB_TOKEN }})
     required: true
-    default: '1000'
+  owner:
+    description: GitHub organization or username
+    required: true
+  readme-path:
+    description: Path to README file (relative to repository root)
+    required: false
+    default: 'README.md'
+  marker:
+    description: Marker comment to identify where to insert projects (e.g. <!--PROJECTS-->)
+    required: false
+    default: '<!--PROJECTS-->'
+  exclude:
+    description: Comma-separated list of repositories to exclude
+    required: false
+    default: ''
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  projects-count:
+    description: Number of projects displayed
 
 runs:
   using: node24

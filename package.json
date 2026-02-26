@@ -1,7 +1,7 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
+  "name": "show-projects-action",
+  "description": "A GitHub Action to display organization/user repositories in README sorted by creation time",
+  "version": "0.0.1",
   "author": "",
   "type": "module",
   "private": true,
@@ -37,7 +37,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^3.0.0"
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.0.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.2",
