@@ -60738,31 +60738,50 @@ async function run() {
             }
             else {
                 const [repoOwner, repoName] = githubRepo.split('/');
-                // Get the file SHA for update
-                let fileSha = '';
-                try {
-                    const fileResponse = await octokit.rest.repos.getContent({
-                        owner: repoOwner,
-                        repo: repoName,
-                        path: readmePath
-                    });
-                    if (!Array.isArray(fileResponse.data) && fileResponse.data.type === 'file') {
-                        fileSha = fileResponse.data.sha;
+                // Create commit with retry logic
+                let committed = false;
+                let retries = 3;
+                while (!committed && retries > 0) {
+                    try {
+                        // Get the file SHA for update
+                        let fileSha = '';
+                        try {
+                            const fileResponse = await octokit.rest.repos.getContent({
+                                owner: repoOwner,
+                                repo: repoName,
+                                path: readmePath
+                            });
+                            if (!Array.isArray(fileResponse.data) &&
+                                fileResponse.data.type === 'file') {
+                                fileSha = fileResponse.data.sha;
+                            }
+                        }
+                        catch {
+                            // File might be new, continue without SHA
+                        }
+                        // Create commit
+                        const commitResponse = await octokit.rest.repos.createOrUpdateFileContents({
+                            owner: repoOwner,
+                            repo: repoName,
+                            path: readmePath,
+                            message: commitMessage,
+                            content: Buffer.from(readmeContent).toString('base64'),
+                            sha: fileSha || undefined
+                        });
+                        info(`Committed as: ${commitResponse.data.commit.sha}`);
+                        committed = true;
+                    }
+                    catch (error) {
+                        retries--;
+                        if (retries > 0) {
+                            warning(`Commit failed, retrying... (${retries} retries left)`);
+                            await new Promise((resolve) => setTimeout(resolve, 1000));
+                        }
+                        else {
+                            throw error;
+                        }
                     }
                 }
-                catch {
-                    // File might be new, continue without SHA
-                }
-                // Create commit
-                const commitResponse = await octokit.rest.repos.createOrUpdateFileContents({
-                    owner: repoOwner,
-                    repo: repoName,
-                    path: readmePath,
-                    message: commitMessage,
-                    content: Buffer.from(readmeContent).toString('base64'),
-                    sha: fileSha || undefined
-                });
-                info(`Committed as: ${commitResponse.data.commit.sha}`);
             }
         }
         // Set output
