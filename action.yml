@@ -11,8 +11,7 @@ branding:
 # Define your inputs here.
 inputs:
   token:
-    description:
-      GitHub token for API access
+    description: GitHub token for API access
     required: true
   owner:
     description: GitHub organization or username

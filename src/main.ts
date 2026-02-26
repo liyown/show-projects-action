@@ -31,7 +31,8 @@ export async function run(): Promise<void> {
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
     const commit = core.getInput('commit') === 'true'
-    const commitMessage = core.getInput('commit-message') || 'docs: update projects list'
+    const commitMessage =
+      core.getInput('commit-message') || 'docs: update projects list'
 
     const octokit = github.getOctokit(token)
 
@@ -171,7 +172,10 @@ export async function run(): Promise<void> {
             repo: repoName,
             path: readmePath
           })
-          if (!Array.isArray(fileResponse.data) && fileResponse.data.type === 'file') {
+          if (
+            !Array.isArray(fileResponse.data) &&
+            fileResponse.data.type === 'file'
+          ) {
             fileSha = fileResponse.data.sha
           }
         } catch {
@@ -179,14 +183,15 @@ export async function run(): Promise<void> {
         }
 
         // Create commit
-        const commitResponse = await octokit.rest.repos.createOrUpdateFileContents({
-          owner: repoOwner,
-          repo: repoName,
-          path: readmePath,
-          message: commitMessage,
-          content: Buffer.from(readmeContent).toString('base64'),
-          sha: fileSha || undefined
-        })
+        const commitResponse =
+          await octokit.rest.repos.createOrUpdateFileContents({
+            owner: repoOwner,
+            repo: repoName,
+            path: readmePath,
+            message: commitMessage,
+            content: Buffer.from(readmeContent).toString('base64'),
+            sha: fileSha || undefined
+          })
 
         core.info(`Committed as: ${commitResponse.data.commit.sha}`)
       }

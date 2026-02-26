@@ -104,6 +104,7 @@
 ### 1. 在 README 中添加标记
 
 在 `README.md` 中添加 `<!--PROJECTS-->`
+
 ## More info...
 
 ````
@@ -132,14 +133,15 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: your-org-or-username
 ````
+
 ## 参数说明
 
-| 参数          | 必填 | 默认值           | 说明                                               |
-| ------------- | ---- | ---------------- | -------------------------------------------------- |
-| `token`       | 是   | -                | GitHub Token，通常用 `${{ secrets.GITHUB_TOKEN }}` |
-| `owner`       | 是   | -                | 组织名或用户名                                     |
-| `readme-path` | 否   | `README.md`      | README 文件路径                                    |
-| `marker`      | 否   | `<!--PROJECTS-->` |生成的位置                                          ｜
+| 参数          | 必填 | 默认值            | 说明                                               |
+| ------------- | ---- | ----------------- | -------------------------------------------------- |
+| `token`       | 是   | -                 | GitHub Token，通常用 `${{ secrets.GITHUB_TOKEN }}` |
+| `owner`       | 是   | -                 | 组织名或用户名                                     |
+| `readme-path` | 否   | `README.md`       | README 文件路径                                    |
+| `marker`      | 否   | `<!--PROJECTS-->` | 生成的位置 ｜                                      |
 
 ````
 
