@@ -30,6 +30,10 @@ inputs:
     description: Comma-separated list of repositories to exclude
     required: false
     default: ''
+  include-forks:
+    description: Include forked repositories in the list
+    required: false
+    default: 'false'
   commit:
     description: Whether to commit changes automatically
     required: false

@@ -8,6 +8,7 @@ interface Repository {
   description: string | null
   html_url: string
   created_at: string
+  fork: boolean
 }
 
 function mapToRepository(repo: Record<string, unknown>): Repository {
@@ -15,7 +16,8 @@ function mapToRepository(repo: Record<string, unknown>): Repository {
     name: String(repo.name),
     description: repo.description as string | null,
     html_url: String(repo.html_url),
-    created_at: String(repo.created_at || '')
+    created_at: String(repo.created_at || ''),
+    fork: Boolean(repo.fork)
   }
 }
 
@@ -26,6 +28,7 @@ export async function run(): Promise<void> {
     const readmePath = core.getInput('readme-path') || 'README.md'
     const marker = core.getInput('marker') || '<!--PROJECTS-->'
     const excludeInput = core.getInput('exclude') || ''
+    const includeForks = core.getInput('include-forks') === 'true'
     const excludeList = excludeInput
       .split(',')
       .map((s) => s.trim())
@@ -84,9 +87,9 @@ export async function run(): Promise<void> {
       }
     }
 
-    // Filter out excluded repositories (already sorted from API)
+    // Filter out excluded and forked repositories (already sorted from API)
     const filteredRepos = repos.filter(
-      (repo) => !excludeList.includes(repo.name)
+      (repo) => !excludeList.includes(repo.name) && (includeForks || !repo.fork)
     )
 
     core.info(`Found ${filteredRepos.length} repositories`)

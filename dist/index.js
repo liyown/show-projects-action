@@ -60629,7 +60629,8 @@ function mapToRepository(repo) {
         name: String(repo.name),
         description: repo.description,
         html_url: String(repo.html_url),
-        created_at: String(repo.created_at || '')
+        created_at: String(repo.created_at || ''),
+        fork: Boolean(repo.fork)
     };
 }
 async function run() {
@@ -60639,6 +60640,7 @@ async function run() {
         const readmePath = getInput('readme-path') || 'README.md';
         const marker = getInput('marker') || '<!--PROJECTS-->';
         const excludeInput = getInput('exclude') || '';
+        const includeForks = getInput('include-forks') === 'true';
         const excludeList = excludeInput
             .split(',')
             .map((s) => s.trim())
@@ -60686,8 +60688,9 @@ async function run() {
                 break;
             }
         }
-        // Filter out excluded repositories (already sorted from API)
-        const filteredRepos = repos.filter((repo) => !excludeList.includes(repo.name));
+        // Filter out excluded and forked repositories (already sorted from API)
+        const filteredRepos = repos.filter((repo) => !excludeList.includes(repo.name) &&
+            (includeForks || !repo.fork));
         info(`Found ${filteredRepos.length} repositories`);
         // Generate projects list in markdown format
         const projectsMarkdown = filteredRepos
