@@ -22,7 +22,8 @@ inputs:
     default: 'README.md'
   marker:
     description:
-      Marker comment to identify where to insert projects (e.g. <!--PROJECTS-->)
+      Start marker comment (e.g. <!--PROJECTS-->, will use <!--/PROJECTS--> as
+      end marker)
     required: false
     default: '<!--PROJECTS-->'
   exclude:

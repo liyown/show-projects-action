@@ -60710,18 +60710,22 @@ async function run() {
             return;
         }
         // Replace marker with projects list
-        // Check for paired markers first
-        const markerRegex = new RegExp(`(${escapeRegExp(marker)})[\\s\\S]*?(${escapeRegExp(marker)})`, 'g');
-        if (markerRegex.test(readmeContent)) {
-            // Marker found in pairs, replace content between them
-            readmeContent = readmeContent.replace(markerRegex, `$1\n${projectsMarkdown}\n$2`);
+        // Use paired markers: <!--PROJECTS--> and <!--/PROJECTS-->
+        const startMarker = marker;
+        const endMarker = marker.replace(/^<!--/, '<!--/').replace(/-->$/, '-->');
+        const startRegex = escapeRegExp(startMarker);
+        const endRegex = escapeRegExp(endMarker);
+        const pairedRegex = new RegExp(`(${startRegex})[\\s\\S]*?(${endRegex})`, 'g');
+        if (pairedRegex.test(readmeContent)) {
+            // Paired markers found, replace content between them
+            readmeContent = readmeContent.replace(pairedRegex, `$1\n${projectsMarkdown}\n$2`);
         }
         else {
-            // Single marker: insert after marker, keep existing content
-            const markerIndex = readmeContent.indexOf(marker);
-            const afterMarker = readmeContent.substring(markerIndex + marker.length);
+            // No paired markers: insert after single marker, keep existing content
+            const markerIndex = readmeContent.indexOf(startMarker);
+            const afterMarker = readmeContent.substring(markerIndex + startMarker.length);
             readmeContent =
-                readmeContent.substring(0, markerIndex + marker.length) +
+                readmeContent.substring(0, markerIndex + startMarker.length) +
                     '\n' +
                     projectsMarkdown +
                     afterMarker;
