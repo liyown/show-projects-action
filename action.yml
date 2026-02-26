@@ -33,7 +33,7 @@ inputs:
   commit:
     description: Whether to commit changes automatically
     required: false
-    default: 'false'
+    default: 'true'
   commit-message:
     description: Commit message when auto-committing
     required: false
